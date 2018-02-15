@@ -174,8 +174,9 @@ module FakeS3
         end
 
         filedata = form_data['file']
+        filedata = clean_chunk(filedata)
       else
-        request.body { |chunk| filedata << chunk }
+        request.body { |chunk| filedata << clean_chunk(chunk) }
       end
 
       do_store_object(bucket, object_name, filedata, request)
@@ -232,7 +233,7 @@ module FakeS3
         etag = Digest::MD5.hexdigest(chunk)
 
         raise new Error "invalid file chunk" unless part[:etag] == etag
-        complete_file << chunk
+        complete_file << clean_chunk(chunk)
         part_paths    << part_path
       end
 
@@ -281,6 +282,16 @@ module FakeS3
         metadata[:amazon_metadata][key.gsub(/^x-amz-/, '')] = value.join(', ')
       end
       return metadata
+    end
+    private
+
+    # Remove chunk dividers
+    def clean_chunk(chunk)
+      if chunk =~ /\A[\da-fA-F]+;chunk-signature=[\da-fA-F]+\r\n/
+        chunk.sub(/\A[\da-fA-F]+;chunk-signature=[\da-fA-F]+\r\n/, '').sub(/\r\n\Z/, '')
+      else
+        chunk
+      end
     end
   end
 end

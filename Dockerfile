@@ -11,3 +11,8 @@ WORKDIR /app
 RUN bundle install
 
 COPY . /app/
+
+RUN mkdir -p /fakes3_root
+ENTRYPOINT ["/app/bin/fakes3"]
+CMD ["-r",  "/fakes3_root", "-p",  "4570"]
+EXPOSE 4570
