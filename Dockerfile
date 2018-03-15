@@ -12,7 +12,10 @@ RUN bundle install
 
 COPY . /app/
 
+
+ENV PORT 4570
+ENV HOSTNAME s3.amazonaws.com
+
 RUN mkdir -p /fakes3_root
-ENTRYPOINT ["/app/bin/fakes3"]
-CMD ["-r",  "/fakes3_root", "-p",  "4570"]
-EXPOSE 4570
+CMD /app/bin/fakes3 -r /fakes3_root -p $PORT -H $HOSTNAME
+EXPOSE $PORT
